@@ -128,6 +128,7 @@ class DataNest:
         return self.query(query_name,params)
     
 
+    # Configuring basic logger patter
     def __config_log(self):
         self.log.basicConfig(level=self.log.DEBUG,
             format='%(asctime)s %(levelname)s %(message)s')
