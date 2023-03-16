@@ -2,6 +2,8 @@ class DataNest:
 
     import json
     import importlib
+    import logging as log
+    
     from os import getcwd as current_path
 
     #Attribute constants
@@ -19,7 +21,7 @@ class DataNest:
     slash = "/"   
      
     #Semi static variables 
-    __version__ = 1.003
+    __version__ = 1.004
     __cur_path = current_path()+slash
     __conf_path = f"{__cur_path}conf/"
     
@@ -57,16 +59,19 @@ class DataNest:
         try:
             datasets_path = self.__cur_path+self.__config[self.NestAttributes.datasets_path]+self.slash
         except (KeyError):
-            print ("Warning! Unable to determine datasets path! Add argument:",self.NestAttributes.datasets_path)
+            self.log.warning (f"Unable to determine datasets path! Add argument: {self.NestAttributes.datasets_path}")
             datasets_path = self.__cur_path
-       
+        except (TypeError):
+            self.log.critical (f"Unable to load main configuration!")
+            raise SystemError ("Unable to load main configuration!")
+            
         try:
             # Iterating and loading datasets from files
             for dataset_name in self.__config[self.NestAttributes.datasets]:
                 queries = self._load_file(datasets_path+dataset_name+self.json_sufix)
                 self.__serialize_dataset(dataset_name,queries)
         except (FileNotFoundError): 
-            print ("Warning! Unable to locate dataset file:",datasets_path+dataset_name+self.json_sufix, "Dataset was not loaded!")
+            self.log.warning (f"Unable to locate dataset file: {datasets_path+dataset_name+self.json_sufix} Dataset was not loaded!")
 
     # Open connection to db
     def open(self):   
@@ -80,7 +85,7 @@ class DataNest:
         try:
             self.__connection.commit()    
         except(AttributeError):
-            print ("Error! Open connection first!")
+            self.log.error ("Open connection first!")
 
     # Close connection
     def close(self):
@@ -89,7 +94,7 @@ class DataNest:
             self.__connection.close()
             self.__is_connection_opened=False
         except(AttributeError):
-            print ("Error! Open connection first!")
+            self.log.error ("Open connection first!")
 
     # Wrapper that makes function transactional, (Opens connection, executes function, commits changes, closes connection)
     def _transactional(query_func):
@@ -111,25 +116,33 @@ class DataNest:
                 result = self.__cursor.execute(self.__datasets[query_name])
             return result
         except(KeyError):
-            print ("Error! Wrong dataset or query name:",query_name)
+            self.log.error (f"Wrong dataset or query name: {query_name}")
+        except(TypeError):
+            self.log.error (f"Wrong dataset or query name: {query_name}") 
         except(AttributeError):
-            print ("Error! Open connection first!")
+            self.log.error ("Open connection first!")
     
     # Opens a new connection, executes query, and immediately commits and closes connection
     @_transactional
     def execute (self, query_name:str, params: dict=None):
         return self.query(query_name,params)
+    
+
+    def __config_log(self):
+        self.log.basicConfig(level=self.log.DEBUG,
+            format='%(asctime)s %(levelname)s %(message)s')
 
     # Loading main configuration
     def __init__(self, config):
         try:
+            self.__config_log()
             self.__conf_path+=config+self.json_sufix
             self.__config = self._load_file(self.__conf_path)
             self.__db_type = self.__config[self.NestAttributes.database][self.NestAttributes.type]
             self.__db_attr = self.__config[self.NestAttributes.database][self.NestAttributes.connection]
             self.__db_module = self.importlib.import_module(self.__db_type)
         except (FileNotFoundError):
-            print ("Critical error! Unable to locate conf file:",self.__conf_path)
+            self.log.critical (f"Unable to locate conf file: {self.__conf_path}")
         except (ModuleNotFoundError):
-            print ("Critical error! Wrong database module:",self.__config[self.NestAttributes.database])
+            self.log.critical (f"Wrong database module: {self.__config[self.NestAttributes.database]}")
         self.__load_datasets()         
