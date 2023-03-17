@@ -1,8 +1,10 @@
 {
-    "database":"sqlite3",
-    "database_name":"test.db",
-    "login":"user",
-    "password":"password",
+    "database":{
+        "type":"sqlite3",
+        "connection":{
+            "database":"test.db"
+        }
+    },
     "datasets_path":"datasets",
     "datasets": ["init","reports"]
 }
