@@ -21,7 +21,7 @@ class DataNest:
     slash = "/"   
      
     #Semi static variables 
-    __version__ = 1.004
+    __version__ = 1.005
     __cur_path = current_path()+slash
     __conf_path = f"{__cur_path}conf/"
     
@@ -118,7 +118,7 @@ class DataNest:
         except(KeyError):
             self.log.error (f"Wrong dataset or query name: {query_name}")
         except(TypeError):
-            self.log.error (f"Wrong dataset or query name: {query_name}") 
+            self.log.error (f"Wrong dataset or query or parameters types: {query_name}") 
         except(AttributeError):
             self.log.error ("Open connection first!")
     
