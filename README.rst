@@ -30,14 +30,14 @@ Where database.type stands for database driver (e.g. sqllite3,cx_Oracle,psycopg2
 
 The dataset file must have the following json structure:
 {
-    query_name1:"sql query text $(replacable_parameter)s",
-    query_name2:"sql query text $(replacable_parameter)s"
+    query_name1:"sql query text :replacable_parameter",
+    query_name2:"sql query text :replacable_parameter"
 }
 
 Simple dataset for example:
 
 {
-    "get_template":"select * from dn_template where name = '%(name)s'",
+    "get_template":"select * from dn_template where name = :name",
     "get_templates":"select * from dn_template"
 }
 
@@ -51,7 +51,7 @@ datanest = DataNest("main") # In this example, "main" goes for your configuratio
 
 datanest.open() # Opens database connection
 datanest.close() # Closes database connection
-datanest.query(query_name:str, arguments:dict) # executes sql query, safely replacing all %(param)s with arguments
+datanest.query(query_name:str, arguments:dict) # executes sql query, safely replacing all :param with arguments
 datanest.commit() # Commits transaction to database
 datanest.execute() # Opens a new connection, executes query, and immediately commits and closes connection
 

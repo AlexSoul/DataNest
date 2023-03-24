@@ -21,7 +21,7 @@ class DataNest:
     slash = "/"   
      
     #Semi static variables 
-    __version__ = 1.005
+    __version__ = 1.006
     __cur_path = current_path()+slash
     __conf_path = f"{__cur_path}conf/"
     
@@ -111,7 +111,7 @@ class DataNest:
         try:
             # When params not defined, executing without formating
             if params:
-                result = self.__cursor.execute(self.__datasets[query_name]%params)
+                result = self.__cursor.execute(self.__datasets[query_name],params)
             else:
                 result = self.__cursor.execute(self.__datasets[query_name])
             return result
